@@ -201,7 +201,10 @@ class DynamicsController
 
   /// 已读通知按内容身份处理；清点与保存立即执行，位置保持到下一次刷新。
   void _onContentRead(DynamicReadEvent event) {
-    if (!_showAllUp || event.accountMid != Accounts.main.mid || isClosed) {
+    // 常看模式也记录本地阅读水位，切回全部关注时不能恢复已读内容的旧红点。
+    if (!Accounts.main.isLogin ||
+        event.accountMid != Accounts.main.mid ||
+        isClosed) {
       return;
     }
     _loadUnreadUps();
@@ -473,7 +476,8 @@ class DynamicsController
   /// 点开作者列表清除其当前全部更新，保持头像位置并保护在途扫描的旧内容。
   void markUpRead(UpItem item) {
     item.hasUpdate = false;
-    if (!_showAllUp) return;
+    // 头像点击的已读语义与展示模式无关，所有模式共用同一份账号已读水位。
+    if (!Accounts.main.isLogin) return;
     _loadUnreadUps();
     _unreadState.markUpRead(
       item.mid,
